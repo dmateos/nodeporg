@@ -10,37 +10,6 @@ var camera;
 var controls;
 var clock;
 
-var socket;
-var g_uuid;
-
-var clients = {};
-
-var Client = function(uuid) {
-  this.position = [0.0, 0.0, 0.0];
-  this.uuid = null;
-
-  var geometry = new THREE.BoxGeometry(1,1,1);
-  var material = new THREE.MeshPhongMaterial({
-        color: 0x00FF00,
-        specular: 0xFFFFFF,
-        shininess: 30,
-        shading: THREE.FlatShading
-  });
-
-  this.mesh = new THREE.Mesh(geometry, material);
-  scene.add(this.mesh);
-}
-
-Client.prototype.destroy = function() {
-  scene.remove(this.mesh);
-};
-
-Client.prototype.update_position = function(x,y,z) {
-  this.mesh.position.x = x;
-  this.mesh.position.y = y;
-  this.mesh.position.z = z;
-};
-
 function threejs_init() {
   container = document.getElementById('container');
   clock = new THREE.Clock();
@@ -52,23 +21,23 @@ function threejs_init() {
   renderer.setSize(container.offsetWidth, container.offsetHeight);
   renderer.setClearColorHex( 0xffffff, 1 );
 
-  var light = new THREE.PointLight(0xFFFFFF, 1, 100);
-  light.position.set(10, 10, 10, 10);
+  var light = new THREE.PointLight(0xFFFFFF, 1, 1000);
+  light.position.set(50, 20, 50);
   scene.add(light);
 
-  var geometry = new THREE.BoxGeometry(6,6,6);
-  var material = new THREE.MeshPhongMaterial({
-        color: 0x0000FF,
-        specular: 0xFFFFFF,
-        shininess: 30,
-        shading: THREE.FlatShading
-  });
+  var plane = new THREE.Mesh(
+    new THREE.PlaneGeometry(100*10, 100*10, 100, 100),
+    new THREE.MeshBasicMaterial( {
+      color: 0x0000FF,
+      wireframe: true
+    })
+  );
 
-  this.mesh = new THREE.Mesh(geometry, material);
-  scene.add(mesh);
+  plane.rotation.x = 90 * (Math.PI/180); 
+  scene.add(plane);
 
-  camera.position.y = 0;
-  camera.position.z = 10;
+  camera.position.y = 10;
+  camera.position.z = 0;
 
   controls = new THREE.FirstPersonControls(camera);
   controls.movementSpeed = 20;
@@ -81,26 +50,27 @@ function threejs_init() {
   render();
 }
 
-var oldx, oldy, oldz;
 function render() {
-  if(oldx != camera.position.x || oldy != camera.position.y || oldz != camera.position.z) {
+  if(controls.dirty) {
     socket.emit('coord update', {uuid: g_uuid, x : camera.position.x, y: camera.position.y, z: camera.position.z});
-    oldx = camera.position.x;
-    oldy = camera.position.y;
-    oldz = camera.position.z;
+    controls.dirty = false;
   }
   controls.update(clock.getDelta());
   requestAnimationFrame(render);
   renderer.render(scene, camera);
 }
 
+var socket;
+var g_uuid;
+var gameobjects = {};
+
 function websocket_start() {
   socket = io();
 
   socket.on("newcon", function(uuid) {
     $('#notifications').append($('<li>').text('new connection: ' + uuid));
-    var client = new Client(uuid);
-    clients[uuid] = client;
+    var client = new GameObject(uuid);
+    gameobjects[uuid] = client;
   });
 
   socket.on("register", function(uuid) {
@@ -110,20 +80,20 @@ function websocket_start() {
 
   socket.on("discon", function(uuid) {
     $('#notifications').append($('<li>').text('new disconnection: ' + uuid));
-    clients[uuid].destroy();
-    delete clients[uuid];
+    gameobjects[uuid].destroy();
+    delete gameobjects[uuid];
   });
 
   socket.on("coord update", function(data) {
 //    $('#notifications').append($('<li>').text('coord update: ' + JSON.stringify(data)));
     var data = JSON.parse(data);
-    if(data.uuid in clients) {
-      clients[data.uuid].update_position(data.x, data.y, data.z);
+    if(data.uuid in gameobjects) {
+      gameobjects[data.uuid].update_position(data.x, data.y, data.z);
     } else if(data.uuid != undefined) {
-      $('#notifications').append($('<li>').text('new connection: ' + data.uuid));
-      var client = new Client(data.uuid);
+      $('#notifications').append($('<li>').text('new packet/connection: ' + data.uuid));
+      var client = new GameObject(data.uuid);
       client.update_position(data.x, data.y, data.z);
-      clients[data.uuid] = client;
+      gameobjects[data.uuid] = client;
     }
   });
 }

@@ -40,6 +40,8 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 
   this.mouseDragOn = false;
 
+  this.dirty = false;
+
   if ( this.domElement === document ) {
 
     this.viewHalfX = window.innerWidth / 2;
@@ -76,6 +78,7 @@ THREE.FirstPersonControls = function ( object, domElement ) {
     }
 
     this.mouseDragOn = true;
+    this.dirty = true;
 
   };
 
@@ -96,6 +99,7 @@ THREE.FirstPersonControls = function ( object, domElement ) {
     }
 
     this.mouseDragOn = false;
+    this.dirty = true;
 
   };
 
@@ -137,7 +141,7 @@ THREE.FirstPersonControls = function ( object, domElement ) {
       case 81: /*Q*/ this.freeze = !this.freeze; break;
 
     }
-
+    this.dirty = true;
   };
 
   this.onKeyUp = function ( event ) {
@@ -160,7 +164,7 @@ THREE.FirstPersonControls = function ( object, domElement ) {
       case 70: /*F*/ this.moveDown = false; break;
 
     }
-
+    this.dirty = true;
   };
 
   this.update = function( delta ) {
@@ -245,7 +249,6 @@ THREE.FirstPersonControls = function ( object, domElement ) {
     targetPosition.z = position.z + 100 * Math.sin( this.phi ) * Math.sin( this.theta );
 
     this.object.lookAt( targetPosition );
-
   };
 
 
