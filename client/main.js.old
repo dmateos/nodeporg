@@ -1,0 +1,62 @@
+function client_start() {
+  websocket_start();
+  webgl_start();
+  webgl_initbuffers();
+  webgl_initshaders();
+  webgl_drawscene();
+}
+
+var gl;
+var mv_matrix = mat4.create();
+var p_matrix = mat4.create();
+var shader_program;
+
+function websocket_start() {
+  var socket = io();
+  socket.on("message", function(msg) {
+    $('#notifications').append($('<li>').text(msg));
+  });
+}
+
+function webgl_start() {
+  var canvas = document.getElementById("maincanvas");
+  try {
+    gl = canvas.getContext("experimental-webgl");
+    gl.viewportWidth = canvas.width;
+    gl.viewportHeight = canvas.height;
+  } catch(e) {
+
+  }
+  if(!gl) {
+    alert("could not init webgl");
+  }
+
+  gl.clearColor(0.0, 1.0, 0.0, 1.0);
+}
+
+function webgl_initbuffers() {
+  var vertbuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, vertbuffer);
+
+  var verticies = [
+    0.0, 1.0, 0.0,
+    -1.0, -1.0, 0.0,
+    1.0, -1.0, 0.0
+  ];
+
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(verticies), gl.STATIC_DRAW);
+  vertbuffer.item_size = 3;
+  vertbuffer.numitems = 4;
+}
+
+function webgl_initshaders() {
+  //var frag_shader = getShader(gl, 'shader-fs');
+  //var vert_shader = getShader(gl, 'shader-vs');
+  shader_program = gl.createProgram();
+}
+
+function webgl_drawscene() {
+  gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+  mat4.perspective(45, gl.viewportWidth/gl.viewportHeight, 0.1, 100.0, p_matrix);
+}
