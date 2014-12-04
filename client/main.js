@@ -9,6 +9,7 @@ var scene;
 var camera;
 var controls;
 var clock;
+var stats;
 
 function threejs_init() {
   container = document.getElementById('container');
@@ -19,32 +20,52 @@ function threejs_init() {
 
   renderer = new THREE.WebGLRenderer();
   renderer.setSize(container.offsetWidth, container.offsetHeight);
-  renderer.setClearColorHex( 0xffffff, 1 );
+  renderer.setClearColor(0x0099FF, 1 );
 
   var light = new THREE.PointLight(0xFFFFFF, 1, 1000);
-  light.position.set(50, 20, 50);
+  light.position.set(-500, 100, -500);
   scene.add(light);
 
+  var plane_texture = new THREE.ImageUtils.loadTexture('assets/grass.jpg');
+  plane_texture.wrapS = THREE.RepeatWrapping;
+  plane_texture.wrapT = THREE.RepeatWrapping;
+  plane_texture.repeat.set(10, 10);
+
   var plane = new THREE.Mesh(
-    new THREE.PlaneGeometry(100*10, 100*10, 100, 100),
+    new THREE.PlaneBufferGeometry(1000, 1000, 1, 1),
     new THREE.MeshBasicMaterial( {
-      color: 0x0000FF,
-      wireframe: true
+      map: plane_texture,
+      side: THREE.DoubleSide
     })
   );
 
-  plane.rotation.x = 90 * (Math.PI/180); 
+  plane.rotation.x = 90 * (Math.PI/180);
   scene.add(plane);
+
+  var sun = new THREE.Mesh(
+    new THREE.SphereGeometry(50, 32, 32),
+    new THREE.MeshBasicMaterial({
+      color: 0xFFFF00
+    })
+  );
+  sun.position.set(-500, 100, -500);
+
+  scene.add(sun);
 
   camera.position.y = 10;
   camera.position.z = 0;
 
   controls = new THREE.FirstPersonControls(camera);
   controls.movementSpeed = 20;
-  controls.lookSpeed = 0.100;
+  controls.lookSpeed = 0.150;
   controls.nofly = true;
   controls.lookVertical = false;
 
+  stats = new Stats();
+  stats.setMode(1);
+  stats.domElement.style.top = '0px';
+
+  container.appendChild(stats.domElement);
   container.appendChild(renderer.domElement);
 
   render();
@@ -56,8 +77,9 @@ function render() {
     controls.dirty = false;
   }
   controls.update(clock.getDelta());
-  requestAnimationFrame(render);
   renderer.render(scene, camera);
+  requestAnimationFrame(render);
+  stats.update();
 }
 
 var socket;

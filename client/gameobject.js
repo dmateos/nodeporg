@@ -2,7 +2,7 @@ var GameObject = function(uuid) {
   this.position = [0.0, 0.0, 0.0];
   this.uuid = null;
 
-  var geometry = new THREE.BoxGeometry(1,1,1);
+  var geometry = new THREE.SphereGeometry(5, 32, 32);
   var material = new THREE.MeshPhongMaterial({
         color: 0x00FF00,
         specular: 0xFFFFFF,

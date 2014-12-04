@@ -7,6 +7,7 @@ var uuid = require('node-uuid');
 http.listen(3000);
 
 app.use('/client', express.static(__dirname + '/client'));
+app.use('/assets', express.static(__dirname + '/assets'));
 
 app.get('/', function(req, res) {
   res.sendFile(__dirname + '/index.html');
@@ -40,5 +41,6 @@ io.on('connection', function(socket) {
   });
 });
 
-
-
+setInterval(function() {
+  console.log("connected users: " + Object.keys(clients).length);
+}, 10000);
