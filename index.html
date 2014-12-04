@@ -5,29 +5,39 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="/client/lib/three.min.js"></script>
     <script src="/client/lib/firstperson.js"></script>
+    <script src="/client/lib/pointerlock.js"></script>
     <script src="/client/lib/Stats.js"></script>
     <script src="/client/gameobject.js"></script>
     <script src="/client/main.js"></script>
     <style>
       body { margin: 10px; background: grey; }
-      #container { width: 1000px; height: 600px; }
+      #center-div {
+        width: 1000px;
+        height: 600px;
+        margin: 0 auto;
+      }
+
+      #container { 
+        width: 1000px; 
+        height: 600px; 
+      }
       #notifications {
         background: white;
-        padding: 5px;
-        margin-top:10px;
-        width:990px;
-        height:200px;
+        margin-top: 60px;
+        width:1000px;
+        height:150px;
         overflow: scroll;
       }
     </style>
 
   </head>
   <body onload="client_start();">
-    <h1> NodePorg </h1>
-    <div id="container"></div>
-    <div id="notifications"></div>
-    <form action="">
-      <input id="chat"/><button>Send</button>
-    </form>
+    <div id="center-div">
+      <div id="container"></div>
+      <div id="notifications"></div>
+      <form action="">
+        <input id="chat"/><button>Send</button>
+      </form>
+    </div>
   </body>
 </html>

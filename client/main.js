@@ -1,6 +1,7 @@
 function client_start() {
   websocket_start();
   threejs_init();
+  pointer_lock();
 }
 
 var container;
@@ -52,14 +53,10 @@ function threejs_init() {
 
   scene.add(sun);
 
-  camera.position.y = 10;
-  camera.position.z = 0;
 
-  controls = new THREE.FirstPersonControls(camera);
-  controls.movementSpeed = 20;
-  controls.lookSpeed = 0.150;
-  controls.nofly = true;
-  controls.lookVertical = false;
+  controls = new THREE.PointerLockControls(camera);
+  controls.enabled = true;
+  scene.add( controls.getObject() );
 
   stats = new Stats();
   stats.setMode(1);
@@ -71,12 +68,18 @@ function threejs_init() {
   render();
 }
 
+var oldx, oldy, oldz;
+
 function render() {
-  if(controls.dirty) {
-    socket.emit('coord update', {uuid: g_uuid, x : camera.position.x, y: camera.position.y, z: camera.position.z});
-    controls.dirty = false;
+  controls.update();
+  var c = controls.getObject();
+  if(oldx != c.position.x || oldy != c.position.y || oldz != c.position.z) {
+    socket.emit('coord update', {uuid: g_uuid, x : c.position.x, y: c.position.y, z: c.position.z});
+    oldx = c.position.x;
+    oldy = c.position.y;
+    oldz = c.position.z;
   }
-  controls.update(clock.getDelta());
+
   renderer.render(scene, camera);
   requestAnimationFrame(render);
   stats.update();
@@ -117,5 +120,12 @@ function websocket_start() {
       client.update_position(data.x, data.y, data.z);
       gameobjects[data.uuid] = client;
     }
+  });
+}
+
+function pointer_lock() {
+  container.requestPointerLock = container.requestPointerLock || canvas.mozRequestPointerLock || canvas.webkitRequestPointerLock;
+  $(container).click(function() {
+    container.requestPointerLock();
   });
 }
