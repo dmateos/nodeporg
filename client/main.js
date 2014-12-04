@@ -94,17 +94,20 @@ function websocket_start() {
 
   socket.on("newcon", function(uuid) {
     $('#notifications').append($('<li>').text('new connection: ' + uuid));
+    $('#notifications').scrollTop($('#notifications')[0].scrollHeight);
     var client = new GameObject(uuid);
     gameobjects[uuid] = client;
   });
 
   socket.on("register", function(uuid) {
     $('#notifications').append($('<li>').text('you are: ' + uuid));
+    $('#notifications').scrollTop($('#notifications')[0].scrollHeight);
     g_uuid = uuid;
   });
 
   socket.on("discon", function(uuid) {
     $('#notifications').append($('<li>').text('new disconnection: ' + uuid));
+    $('#notifications').scrollTop($('#notifications')[0].scrollHeight);
     gameobjects[uuid].destroy();
     delete gameobjects[uuid];
   });
@@ -116,10 +119,22 @@ function websocket_start() {
       gameobjects[data.uuid].update_position(data.x, data.y, data.z);
     } else if(data.uuid != undefined) {
       $('#notifications').append($('<li>').text('new packet/connection: ' + data.uuid));
+      $('#notifications').scrollTop($('#notifications')[0].scrollHeight);
       var client = new GameObject(data.uuid);
       client.update_position(data.x, data.y, data.z);
       gameobjects[data.uuid] = client;
     }
+  });
+
+  socket.on("chat message", function(data) {
+      $('#notifications').append($('<li>').text('chat ' + data.from + ': ' + data.message ));
+      $('#notifications').scrollTop($('#notifications')[0].scrollHeight);
+  });
+
+  $('form').submit(function(){
+    socket.emit('chat message', {from: g_uuid, message: $('#chat').val() });
+    $('#chat').val('');
+    return false;
   });
 }
 

@@ -39,6 +39,11 @@ io.on('connection', function(socket) {
     socket.broadcast.emit("coord update", JSON.stringify(data));
     console.log('coord update ' + JSON.stringify(data));
   });
+
+  socket.on("chat message", function(data) {
+    io.emit("chat message", data);
+    console.log("chat message " + data);
+  });
 });
 
 setInterval(function() {
