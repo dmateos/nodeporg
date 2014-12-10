@@ -19,13 +19,9 @@ function threejs_init() {
   scene = new THREE.Scene();
   camera = new THREE.PerspectiveCamera( 75, container.offsetWidth/container.offsetHeight, 0.1, 10000 );
 
-  renderer = new THREE.WebGLRenderer();
+  renderer = new THREE.WebGLRenderer({antialias: true });
   renderer.setSize(container.offsetWidth, container.offsetHeight);
   renderer.setClearColor(0x0099FF, 1 );
-
-  var light = new THREE.PointLight(0xFFFFFF, 1, 1000);
-  light.position.set(-500, 100, -500);
-  scene.add(light);
 
   var plane_texture = new THREE.ImageUtils.loadTexture('assets/grass.jpg');
   plane_texture.wrapS = THREE.RepeatWrapping;
@@ -34,9 +30,10 @@ function threejs_init() {
 
   var plane = new THREE.Mesh(
     new THREE.PlaneBufferGeometry(1000, 1000, 1, 1),
-    new THREE.MeshBasicMaterial( {
+    new THREE.MeshLambertMaterial({
       map: plane_texture,
-      side: THREE.DoubleSide
+      side: THREE.DoubleSide,
+      color: 0x00FF00,
     })
   );
 
@@ -45,14 +42,19 @@ function threejs_init() {
 
   var sun = new THREE.Mesh(
     new THREE.SphereGeometry(50, 32, 32),
-    new THREE.MeshBasicMaterial({
-      color: 0xFFFF00
+    new THREE.MeshLambertMaterial({
+      color: 0xFFFF00,
     })
   );
-  sun.position.set(-500, 100, -500);
-
+  sun.position.set(-500, 300, -500);
   scene.add(sun);
 
+  var sunlight = new THREE.PointLight( 0xffffff, 1, 500 );
+  sunlight.position.set( -500, 100, -500 );
+  scene.add(sunlight);
+
+  var ambientlight = new THREE.AmbientLight(0x404040);
+  scene.add(ambientlight);
 
   controls = new THREE.PointerLockControls(camera);
   controls.enabled = true;
